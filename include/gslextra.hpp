@@ -1,5 +1,9 @@
+#ifndef GSLEXTRA_HPP
+#define GSLEXTRA_HPP
+
 #include "gsl/gsl_matrix.h"
 #include "gsl/gsl_vector.h"
+#include "gsl/gsl_blas.h"
 #include "memory"
 #include "vector"
 #include "fmt/core.h"
@@ -78,6 +82,15 @@ namespace QUtil {
             return fmt::to_string(s);
         }
 
+        inline double integral(gsl_vector *left, gsl_matrix *op, gsl_vector *right, gsl_vector *wb) {
+            gsl_vector_set_zero(wb);
+            gsl_blas_dgemv(CblasNoTrans, 1, op, right, 0, wb);
+            double result;
+            gsl_blas_ddot(left, wb, &result);
+            return result;
+        }
+
     }
 
 }
+#endif
