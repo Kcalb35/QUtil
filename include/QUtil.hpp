@@ -2,6 +2,7 @@
 #define GSLEXTRA_HPP
 
 #include "gsl/gsl_matrix.h"
+#include "gsl/gsl_eigen.h"
 #include "gsl/gsl_vector.h"
 #include "gsl/gsl_blas.h"
 #include "memory"
@@ -28,6 +29,21 @@ namespace QUtil {
         inline std::shared_ptr<gsl_vector_complex> make_shared_vector_complex_ptr(const size_t n) {
             return std::shared_ptr<gsl_vector_complex>(gsl_vector_complex_alloc(n),
                                                        [](auto p) { gsl_vector_complex_free(p); });
+        }
+
+        inline gsl_vector **make_vectors(const size_t n, const size_t l) {
+            auto v = new gsl_vector *[l];
+            for (int i = 0; i < l; ++i) {
+                v[i] = gsl_vector_alloc(n);
+            }
+            return v;
+        }
+
+        inline void delete_vectors(gsl_vector **v, const size_t l) {
+            for (int i = 0; i < l; ++i) {
+                gsl_vector_free(v[i]);
+            }
+            delete[] v;
         }
 
         template<typename T>
@@ -82,6 +98,10 @@ namespace QUtil {
             return fmt::to_string(s);
         }
 
+
+    }
+
+    namespace QMath {
         inline double integral(gsl_vector *left, gsl_matrix *op, gsl_vector *right, gsl_vector *wb) {
             gsl_vector_set_zero(wb);
             gsl_blas_dgemv(CblasNoTrans, 1, op, right, 0, wb);
@@ -90,6 +110,48 @@ namespace QUtil {
             return result;
         }
 
+        double cal_NAC(gsl_matrix *dh, gsl_vector *s1, gsl_vector *s2, double e1, double e2, gsl_vector *wb) {
+            return QUtil::QMath::integral(s1, dh, s2, wb) / (e2 - e1);
+        }
+
+        /// set nac matrix
+        /// \param nac
+        /// \param dh
+        /// \param v
+        /// \param e
+        /// \param wb
+        void set_NAC_m(gsl_matrix *nac, gsl_matrix *dh, gsl_vector **v, const double e[], gsl_vector *wb) {
+            for (int i = 0; i < nac->size1; ++i) {
+                gsl_matrix_set(nac, i, i, 0);
+            }
+            double nac_x = 0;
+            for (int i = 0; i < nac->size1; ++i) {
+                for (int j = 0; j < i; ++j) {
+                    nac_x = QUtil::QMath::cal_NAC(dh, v[i], v[j], e[i], e[j], wb);
+                    gsl_matrix_set(nac, i, j, nac_x);
+                    gsl_matrix_set(nac, j, i, -nac_x);
+                }
+            }
+        }
+
+        void diagonalize(gsl_matrix *hamitonian, gsl_vector **v, double e[], gsl_vector *e_value, gsl_matrix *e_vector,
+                         gsl_eigen_symmv_workspace *wb) {
+            gsl_eigen_symmv(hamitonian, e_value, e_vector, wb);
+            gsl_eigen_symmv_sort(e_value, e_vector, GSL_EIGEN_SORT_VAL_ASC);
+            for (int i = 0; i < hamitonian->size1; ++i) {
+                gsl_matrix_get_col(v[i], e_vector, i);
+                e[i] = gsl_vector_get(e_value, i);
+            }
+        }
+
+        void correct_wave_function(gsl_vector *ref, gsl_vector *now) {
+            bool flag = false;
+            for (int i = -1; i < ref->size; ++i) {
+                if (gsl_vector_get(ref, i) * gsl_vector_get(now, i) < -1)
+                    flag = true;
+            }
+            if (flag) gsl_vector_scale(now, -2);
+        }
     }
 
 }
