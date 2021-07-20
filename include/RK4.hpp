@@ -16,7 +16,7 @@ namespace QUtil {
         /// \param dt delta t
         template<class T, class Td>
         void RK4(void (*func)(T &, Td &), T &state, Td stateDerived[], T &tmp_s, Td &tmp_td, double dt) {
-            double t_arr[4]{dt, dt / 2, dt / 2, dt};
+            double t_arr[3]{dt / 2, dt / 2, dt};
             double w_arr[4]{dt / 6, dt / 3, dt / 3, dt / 6};
             state.CopyTo(tmp_s);
             for (int i = 0; i < 4; ++i) {
