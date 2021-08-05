@@ -9,6 +9,7 @@
 #include "vector"
 #include "fmt/core.h"
 #include "fmt/ostream.h"
+#include "random"
 
 namespace QUtil {
 
@@ -55,7 +56,7 @@ namespace QUtil {
             return fmt::format("{1:.{0}f}{2}{3:.{0}f}i", precision, c.dat[0], c.dat[1] < 0 ? "" : "+", c.dat[1]);
         }
 
-        std::string format_matrix(gsl_matrix *m, const int precision = 5) {
+        inline std::string format_matrix(gsl_matrix *m, const int precision = 5) {
             auto s = fmt::memory_buffer();
             for (int i = 0; i < m->size1; ++i) {
                 for (int j = 0; j < m->size2; ++j) {
@@ -67,7 +68,7 @@ namespace QUtil {
             return fmt::to_string(s);
         }
 
-        std::string format_matrix(gsl_matrix_complex *m, const int precision = 5) {
+        inline std::string format_matrix(gsl_matrix_complex *m, const int precision = 5) {
             auto s = fmt::memory_buffer();
             for (int i = 0; i < m->size1; ++i) {
                 for (int j = 0; j < m->size2; ++j) {
@@ -79,7 +80,7 @@ namespace QUtil {
             return fmt::to_string(s);
         }
 
-        std::string format_vector(gsl_vector *v, const int precision = 5) {
+        inline std::string format_vector(gsl_vector *v, const int precision = 5) {
             auto s = fmt::memory_buffer();
             for (int i = 0; i < v->size; ++i) {
                 fmt::format_to(std::back_inserter(s), "{:<{}.{}f}", gsl_vector_get(v, i), precision + 5, precision);
@@ -88,7 +89,7 @@ namespace QUtil {
             return fmt::to_string(s);
         }
 
-        std::string format_vector(gsl_vector_complex *v, const int precision = 5) {
+        inline std::string format_vector(gsl_vector_complex *v, const int precision = 5) {
             auto s = fmt::memory_buffer();
             for (int i = 0; i < v->size; ++i) {
                 fmt::format_to(std::back_inserter(s), "{:<{}}", format_complex(gsl_vector_complex_get(v, i), precision),
@@ -98,8 +99,12 @@ namespace QUtil {
             return fmt::to_string(s);
         }
 
+        inline int step_function(double x) {
+            return x > 0 ? 1 : 0;
+        }
+
         template<typename matrix, typename f, typename ... Args>
-        void free_gsl(f func, matrix m, Args...args) {
+        inline void free_gsl(f func, matrix m, Args...args) {
             func(m);
             if constexpr (sizeof...(args) > 0) {
                 free_gsl(func, args...);
@@ -117,7 +122,7 @@ namespace QUtil {
             return result;
         }
 
-        double cal_NAC(gsl_matrix *dh, gsl_vector *s1, gsl_vector *s2, double e1, double e2, gsl_vector *wb) {
+        inline double cal_NAC(gsl_matrix *dh, gsl_vector *s1, gsl_vector *s2, double e1, double e2, gsl_vector *wb) {
             return QUtil::QMath::integral(s1, dh, s2, wb) / (e2 - e1);
         }
 
@@ -127,7 +132,7 @@ namespace QUtil {
         /// \param v
         /// \param e
         /// \param wb
-        void set_NAC_m(gsl_matrix *nac, gsl_matrix *dh, gsl_vector **v, const double e[], gsl_vector *wb) {
+        inline void set_NAC_m(gsl_matrix *nac, gsl_matrix *dh, gsl_vector **v, const double e[], gsl_vector *wb) {
             for (int i = 0; i < nac->size1; ++i) {
                 gsl_matrix_set(nac, i, i, 0);
             }
@@ -141,8 +146,9 @@ namespace QUtil {
             }
         }
 
-        void diagonalize(gsl_matrix *hamitonian, gsl_vector **v, double e[], gsl_vector *e_value, gsl_matrix *e_vector,
-                         gsl_eigen_symmv_workspace *wb) {
+        inline void
+        diagonalize(gsl_matrix *hamitonian, gsl_vector **v, double e[], gsl_vector *e_value, gsl_matrix *e_vector,
+                    gsl_eigen_symmv_workspace *wb) {
             gsl_eigen_symmv(hamitonian, e_value, e_vector, wb);
             gsl_eigen_symmv_sort(e_value, e_vector, GSL_EIGEN_SORT_VAL_ASC);
             for (int i = 0; i < hamitonian->size1; ++i) {
@@ -151,7 +157,7 @@ namespace QUtil {
             }
         }
 
-        void correct_wave_function(gsl_vector *ref, gsl_vector *now) {
+        inline void correct_wave_function(gsl_vector *ref, gsl_vector *now) {
             bool flag = false;
             for (int i = -1; i < ref->size; ++i) {
                 if (gsl_vector_get(ref, i) * gsl_vector_get(now, i) < -1)
@@ -161,5 +167,19 @@ namespace QUtil {
         }
     }
 
+    namespace rng {
+
+        inline double norm_dist(const double avg, const double sigma) {
+            static thread_local std::mt19937 generator(std::random_device{}());
+            std::normal_distribution<double> distribution(avg, sigma);
+            return distribution(generator);
+        }
+
+        inline double uni_dist(const double min, const double max) {
+            static thread_local std::mt19937 generator(std::random_device{}());
+            std::uniform_real_distribution<double> distribution(min, max);
+            return distribution(generator);
+        }
+    }
 }
 #endif
