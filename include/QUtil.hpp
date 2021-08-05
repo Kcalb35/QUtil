@@ -1,5 +1,5 @@
-#ifndef GSLEXTRA_HPP
-#define GSLEXTRA_HPP
+#ifndef QUTIL_HPP
+#define QUTIL_HPP
 
 #include "gsl/gsl_matrix.h"
 #include "gsl/gsl_eigen.h"
@@ -98,6 +98,13 @@ namespace QUtil {
             return fmt::to_string(s);
         }
 
+        template<typename matrix, typename f, typename ... Args>
+        void free_gsl(f func, matrix m, Args...args) {
+            func(m);
+            if constexpr (sizeof...(args) > 0) {
+                free_gsl(func, args...);
+            }
+        }
 
     }
 
