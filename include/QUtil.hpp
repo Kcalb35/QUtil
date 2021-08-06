@@ -159,11 +159,11 @@ namespace QUtil {
 
         inline void correct_wave_function(gsl_vector *ref, gsl_vector *now) {
             bool flag = false;
-            for (int i = -1; i < ref->size; ++i) {
-                if (gsl_vector_get(ref, i) * gsl_vector_get(now, i) < -1)
+            for (int i = 0; i < ref->size; ++i) {
+                if (gsl_vector_get(ref, i) * gsl_vector_get(now, i) < 0)
                     flag = true;
             }
-            if (flag) gsl_vector_scale(now, -2);
+            if (flag) gsl_vector_scale(now, -1);
         }
     }
 

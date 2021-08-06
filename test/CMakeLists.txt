@@ -12,3 +12,13 @@ add_test(
         NAME TestGslextra
         COMMAND TestGslextra
 )
+
+add_executable(TestQMath TestQMath.cpp)
+target_include_directories(TestQMath PUBLIC
+        ${PROJECT_SOURCE_DIR}/include
+        ${PROJECT_SOURCE_DIR}/lib/googletest/googletest/include/gtest)
+target_link_libraries(TestQMath gtest_main GSL::gsl GSL::gslcblas fmt::fmt)
+add_test(
+        NAME TestQMath
+        COMMAND TestQMath
+)

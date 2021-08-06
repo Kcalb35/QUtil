@@ -2,6 +2,7 @@
 #include "gtest/gtest.h"
 
 using namespace QUtil::gslextra;
+using namespace QUtil::QMath;
 
 TEST(shared_ptr, matrix) {
     auto p = make_shared_matrix_ptr(2, 2);
@@ -68,12 +69,12 @@ TEST(log, vector_complex) {
     fmt::print(format_vector(p.get(), 3));
 }
 
-TEST(math,integral){
+TEST(math, integral) {
     auto l = make_shared_vector_ptr(3);
     auto wb = make_shared_vector_ptr(3);
-    auto m = make_shared_matrix_ptr(3,3);
-    gsl_matrix_set_all(m.get(),1);
-    gsl_vector_set_all(l.get(),1);
+    auto m = make_shared_matrix_ptr(3, 3);
+    gsl_matrix_set_all(m.get(), 1);
+    gsl_vector_set_all(l.get(), 1);
 
-    EXPECT_EQ(9,integral(l.get(),m.get(),l.get(),wb.get()));
+    EXPECT_EQ(9, integral(l.get(), m.get(), l.get(), wb.get()));
 }
