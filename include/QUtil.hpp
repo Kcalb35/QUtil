@@ -165,6 +165,12 @@ namespace QUtil {
             }
             if (flag) gsl_vector_scale(now, -1);
         }
+
+        inline double cal_momentum(const double Ep, const double p, const double Ep_dst, const double mass) {
+            double root = 1 + 2 * mass * (Ep - Ep_dst) / p / p;
+            if (root < 0) return 0;
+            else return p * sqrt(root);
+        }
     }
 
     namespace rng {
