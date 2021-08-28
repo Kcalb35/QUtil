@@ -4,6 +4,7 @@
 #include <cmath>
 #include <gsl/gsl_matrix.h>
 #include <gsl/gsl_blas.h>
+#include "string"
 
 class NumericalModel {
 public:
@@ -17,6 +18,7 @@ public:
 
     double x0{}, left{}, right{};
     int DoF{};
+    std::string name{};
 };
 
 class ECR : public NumericalModel {
@@ -50,6 +52,7 @@ public:
         left = -15;
         right = 15;
         DoF = 2;
+        name = "ECR";
     }
 
 };
@@ -88,6 +91,7 @@ public:
         left = -10;
         right = 10;
         DoF = 2;
+        name = "SAC";
     }
 };
 
@@ -122,6 +126,7 @@ public:
         left = -15;
         right = 15;
         DoF = 2;
+        name = "DAC";
     }
 };
 
@@ -170,6 +175,7 @@ public:
         left = -20;
         right = 20;
         DoF = 2;
+        name = "DBG";
     };
 };
 
@@ -220,6 +226,7 @@ public:
         left = -20;
         right = 20;
         DoF = 2;
+        name = "DAG";
     }
 };
 
@@ -255,6 +262,7 @@ public:
         left = -10;
         right = 10;
         DoF = 2;
+        name = "DRN";
     }
 };
 
