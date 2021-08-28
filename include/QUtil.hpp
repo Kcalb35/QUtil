@@ -111,6 +111,26 @@ namespace QUtil {
             }
         }
 
+        inline void gsl_matrix_set_diag(gsl_matrix *m, const double value) {
+            for (int i = 0; i < m->size1; ++i)
+                gsl_matrix_set(m, i, i, value);
+        }
+
+        inline void gsl_matrix_set_diag(gsl_matrix_complex *m, const gsl_complex value) {
+            for (int i = 0; i < m->size1; ++i)
+                gsl_matrix_complex_set(m, i, i, value);
+        }
+
+        inline void gsl_matrix_set_diag(gsl_matrix *m, const gsl_vector *diag) {
+            for (int i = 0; i < m->size1; ++i)
+                gsl_matrix_set(m, i, i, gsl_vector_get(diag, i));
+        }
+
+        inline void gsl_matrix_set_diag(gsl_matrix_complex *m, const gsl_vector_complex *diag) {
+            for (int i = 0; i < m->size1; ++i)
+                gsl_matrix_complex_set(m, i, i, gsl_vector_complex_get(diag, i));
+        }
+
     }
 
     namespace QMath {
