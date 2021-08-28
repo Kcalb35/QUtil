@@ -50,3 +50,36 @@ TEST(Model, Models) {
     delete_vectors(tmp_v, 2);
     gsl_eigen_symmv_free(wb);
 }
+
+TEST(math, integral) {
+    auto l = make_shared_vector_ptr(3);
+    auto wb = make_shared_vector_ptr(3);
+    auto m = make_shared_matrix_ptr(3, 3);
+    gsl_matrix_set_all(m.get(), 1);
+    gsl_vector_set_all(l.get(), 1);
+
+    EXPECT_EQ(9, integral(l.get(), m.get(), l.get(), wb.get()));
+}
+
+TEST(math, integral_z) {
+    auto l = make_shared_vector_complex_ptr(2);
+    auto m = make_shared_matrix_complex_ptr(2, 2);
+    auto wb = make_shared_vector_complex_ptr(2);
+    for (int i = 0; i < 2; ++i) {
+        for (int j = 0; j < 2; ++j) {
+            gsl_matrix_complex_set(m.get(), i, j, gsl_complex{i + 1.0, j + 1.0});
+        }
+    }
+    for (int i = 0; i < 2; ++i) {
+        gsl_vector_complex_set(l.get(), i, gsl_complex{1.0 + i, 2.0 + i});
+    }
+    EXPECT_EQ(56, integral(l.get(), m.get(), l.get(), wb.get()));
+}
+
+TEST(math, inner_product) {
+    auto l = make_shared_vector_complex_ptr(2);
+    for (int i = 0; i < 2; ++i) {
+        gsl_vector_complex_set(l.get(), i, gsl_complex{1.0 + i, 2.0 + i});
+    }
+    EXPECT_EQ(18, inner_product(l.get(), l.get()));
+}

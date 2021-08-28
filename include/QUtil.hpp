@@ -5,6 +5,8 @@
 #include "gsl/gsl_eigen.h"
 #include "gsl/gsl_vector.h"
 #include "gsl/gsl_blas.h"
+#include "gsl/gsl_complex.h"
+#include "gsl/gsl_complex_math.h"
 #include "memory"
 #include "vector"
 #include "fmt/core.h"
@@ -15,21 +17,19 @@ namespace QUtil {
 
     namespace gslextra {
         inline std::shared_ptr<gsl_matrix> make_shared_matrix_ptr(const size_t n1, const size_t n2) {
-            return std::shared_ptr<gsl_matrix>(gsl_matrix_alloc(n1, n2), [](auto *p) { gsl_matrix_free(p); });
+            return {gsl_matrix_alloc(n1, n2), [](auto *p) { gsl_matrix_free(p); }};
         }
 
         inline std::shared_ptr<gsl_vector> make_shared_vector_ptr(const size_t n) {
-            return std::shared_ptr<gsl_vector>(gsl_vector_alloc(n), [](auto *p) { gsl_vector_free(p); });
+            return {gsl_vector_alloc(n), [](auto *p) { gsl_vector_free(p); }};
         }
 
         inline std::shared_ptr<gsl_matrix_complex> make_shared_matrix_complex_ptr(const size_t n1, const size_t n2) {
-            return std::shared_ptr<gsl_matrix_complex>(gsl_matrix_complex_alloc(n1, n2),
-                                                       [](auto *p) { gsl_matrix_complex_free(p); });
+            return {gsl_matrix_complex_alloc(n1, n2), [](auto *p) { gsl_matrix_complex_free(p); }};
         }
 
         inline std::shared_ptr<gsl_vector_complex> make_shared_vector_complex_ptr(const size_t n) {
-            return std::shared_ptr<gsl_vector_complex>(gsl_vector_complex_alloc(n),
-                                                       [](auto p) { gsl_vector_complex_free(p); });
+            return {gsl_vector_complex_alloc(n), [](auto p) { gsl_vector_complex_free(p); }};
         }
 
         inline gsl_vector **make_vectors(const size_t n, const size_t l) {
@@ -53,7 +53,7 @@ namespace QUtil {
         }
 
         inline std::string format_complex(const gsl_complex c, const int precision) {
-            return fmt::format("{1:.{0}f}{2}{3:.{0}f}i", precision, c.dat[0], c.dat[1] < 0 ? "" : "+", c.dat[1]);
+            return fmt::format("{1:.{0}f}{2}{3:.{0}f}i", precision, GSL_REAL(c), GSL_IMAG(c) < 0 ? "" : "+", c.dat[1]);
         }
 
         inline std::string format_matrix(gsl_matrix *m, const int precision = 5) {
@@ -120,6 +120,20 @@ namespace QUtil {
             double result;
             gsl_blas_ddot(left, wb, &result);
             return result;
+        }
+
+        inline double
+        integral(gsl_vector_complex *left, gsl_matrix_complex *op, gsl_vector_complex *right, gsl_vector_complex *wb) {
+            gsl_complex tmp{};
+            gsl_blas_zgemv(CblasNoTrans, GSL_COMPLEX_ONE, op, right, GSL_COMPLEX_ZERO, wb);
+            gsl_blas_zdotc(left, wb, &tmp);
+            return GSL_REAL(tmp);
+        }
+
+        inline double inner_product(gsl_vector_complex *left, gsl_vector_complex *right) {
+            gsl_complex tmp{};
+            gsl_blas_zdotc(left, right, &tmp);
+            return GSL_REAL(tmp);
         }
 
         inline double cal_NAC(gsl_matrix *dh, gsl_vector *s1, gsl_vector *s2, double e1, double e2, gsl_vector *wb) {

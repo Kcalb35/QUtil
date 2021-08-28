@@ -1,5 +1,6 @@
 #include "QUtil.hpp"
 #include "gtest/gtest.h"
+#include "fmt/core.h"
 
 using namespace QUtil::gslextra;
 using namespace QUtil::QMath;
@@ -67,14 +68,4 @@ TEST(log, vector_complex) {
     gsl_vector_complex_set(p.get(), 2, gsl_complex{0, 1.5});
     gsl_vector_complex_set(p.get(), 3, gsl_complex{1, 0});
     fmt::print(format_vector(p.get(), 3));
-}
-
-TEST(math, integral) {
-    auto l = make_shared_vector_ptr(3);
-    auto wb = make_shared_vector_ptr(3);
-    auto m = make_shared_matrix_ptr(3, 3);
-    gsl_matrix_set_all(m.get(), 1);
-    gsl_vector_set_all(l.get(), 1);
-
-    EXPECT_EQ(9, integral(l.get(), m.get(), l.get(), wb.get()));
 }
